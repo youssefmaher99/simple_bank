@@ -13,7 +13,7 @@ type createTransferRequest struct {
 	FromAccountID int64  `json:"from_account" binding:"required,min=1"`
 	ToAccountID   int64  `json:"to_account" binding:"required,min=1"`
 	Amount        int64  `json:"amount" binding:"required,gt=0"`
-	Currencty     string `json:"currency" binding:"required,currency"`
+	Currency      string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) createTransfer(ctx *gin.Context) {
@@ -23,11 +23,11 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	if !server.validAccount(ctx, req.FromAccountID, req.Currencty) {
+	if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
 		return
 	}
 
-	if !server.validAccount(ctx, req.ToAccountID, req.Currencty) {
+	if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
 		return
 	}
 
@@ -40,7 +40,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, transfer)
 }
 
-func (server *Server) validAccount(ctx *gin.Context, accountID int64, currecny string) bool {
+func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency string) bool {
 	account, err := server.store.GetAcount(ctx, accountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -51,8 +51,8 @@ func (server *Server) validAccount(ctx *gin.Context, accountID int64, currecny s
 		return false
 	}
 
-	if account.Currencty != currecny {
-		err := fmt.Errorf("account [%d] currency mismatch %s vs %s", account.ID, account.Currencty, currecny)
+	if account.Currency != currency {
+		err := fmt.Errorf("account [%d] currency mismatch %s vs %s", account.ID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return false
 	}

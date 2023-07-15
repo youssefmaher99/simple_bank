@@ -103,12 +103,40 @@ func TestGetAccountAPI(t *testing.T) {
 
 }
 
+func TestCreateAccountAPI(t *testing.T) {
+	account := randomAccount()
+	account.Balance = 0
+	arg := db.CreateAccountParams{Owner: account.Owner, Currency: account.Currency, Balance: account.Balance}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	store := mockdb.NewMockStore(ctrl)
+
+	store.EXPECT().CreateAccount(gomock.Any(), gomock.Eq(arg)).Times(1).Return(account, nil)
+
+	server := NewServer(store)
+	recorder := httptest.NewRecorder()
+	url := "/accounts"
+
+	body := createAccountRequest{Owner: account.Owner, Currency: account.Currency}
+
+	data_bytes, err := json.Marshal(body)
+	require.NoError(t, err)
+
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data_bytes))
+	require.NoError(t, err)
+
+	server.router.ServeHTTP(recorder, request)
+	require.Equal(t, recorder.Code, http.StatusOK)
+	requrieBodyMatchAccount(t, recorder.Body, account)
+}
+
 func randomAccount() db.Account {
 	return db.Account{
-		ID:        util.RandomInt(1, 1000),
-		Owner:     util.RandomOwner(6),
-		Currencty: util.RandomCurrency(),
-		Balance:   util.RandomMoney(),
+		ID:       util.RandomInt(1, 1000),
+		Owner:    util.RandomOwner(6),
+		Currency: util.RandomCurrency(),
+		Balance:  util.RandomMoney(),
 	}
 }
 

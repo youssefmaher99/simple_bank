@@ -9,8 +9,8 @@ import (
 )
 
 type createAccountRequest struct {
-	Owner     string `json:"owner" binding:"required"`
-	Currencty string `json:"currencty" binding:"required,currency"`
+	Owner    string `json:"owner" binding:"required"`
+	Currency string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -19,7 +19,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	arg := db.CreateAccountParams{Owner: req.Owner, Currencty: req.Currencty, Balance: 0}
+	arg := db.CreateAccountParams{Owner: req.Owner, Currency: req.Currency, Balance: 0}
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
